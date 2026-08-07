@@ -1,0 +1,120 @@
+@startuml
+
+title Diagrama de Actividades - Módulo de Signos Vitales y Alertas
+
+start
+
+partition "Enfermero/a" {
+
+    :Iniciar sesión
+    en el sistema;
+
+    :Seleccionar paciente;
+
+    :Ingresar mediciones
+    de signos vitales;
+
+    :Enviar registro;
+
+}
+
+partition "Sistema Hospitalario" {
+
+    :Validar JWT, permisos
+    y tenant;
+
+    if (¿Usuario autorizado?) then (Sí)
+
+        :Validar información
+        de los signos vitales;
+
+        if (¿Datos válidos?) then (Sí)
+
+            :Registrar signos vitales;
+
+            :Asociar registro
+            al paciente;
+
+            :Registrar fecha, hora
+            y usuario responsable;
+
+            :Obtener rangos de referencia;
+
+            :Evaluar los valores
+            registrados;
+
+            if (¿Existen valores anormales?) then (Sí)
+
+                :Crear alerta;
+
+                :Asignar prioridad
+                y estado inicial;
+
+                :Guardar alerta;
+
+                :Enviar alerta al sistema
+                de notificaciones;
+
+                partition "Médico/a" {
+
+                    :Consultar alertas;
+
+                    :Revisar información
+                    del paciente;
+
+                    :Registrar seguimiento;
+
+                    if (¿La alerta fue atendida?) then (Sí)
+
+                        :Actualizar estado
+                        de la alerta;
+
+                        :Cerrar o resolver
+                        la alerta;
+
+                    else (No)
+
+                        :Mantener alerta
+                        activa o pendiente;
+
+                    endif
+
+                }
+
+            else (No)
+
+                :Clasificar valores
+                como normales;
+
+            endif
+
+            :Confirmar registro
+            exitoso;
+
+        else (No)
+
+            :Mostrar errores
+            de validación;
+
+            partition "Enfermero/a" {
+
+                :Corregir los datos;
+
+            }
+
+        endif
+
+    else (No)
+
+        :Denegar la solicitud;
+
+        :Mostrar mensaje
+        de acceso no autorizado;
+
+    endif
+
+}
+
+stop
+
+@enduml

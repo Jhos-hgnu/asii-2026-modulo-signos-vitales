@@ -1,0 +1,40 @@
+@startuml
+
+left to right direction
+
+actor "Enfermero/a" as Enfermero
+actor "Médico/a" as Medico
+actor "Administrador del tenant" as Admin
+
+rectangle "Módulo de Signos Vitales y Alertas" {
+
+    usecase "Registrar signos vitales" as Registrar
+
+    usecase "Consultar historial de\nsignos vitales" as Historial
+
+    usecase "Evaluar valores\nregistrados" as Evaluar
+
+    usecase "Generar alerta por\nvalor anormal" as Alerta
+
+    usecase "Consultar alertas" as ConsultarAlertas
+
+    usecase "Registrar seguimiento\nde alerta" as Seguimiento
+
+    usecase "Configurar rangos\nde referencia" as Rangos
+}
+
+Enfermero --> Registrar
+Enfermero --> Historial
+Enfermero --> ConsultarAlertas
+
+Medico --> Historial
+Medico --> ConsultarAlertas
+Medico --> Seguimiento
+
+Admin --> Rangos
+
+Registrar .> Evaluar : <<include>>
+
+Alerta .> Evaluar : <<extend>>
+
+@enduml

@@ -1,0 +1,126 @@
+@startuml
+
+title Diagrama de Secuencia General - Módulo de Signos Vitales y Alertas
+
+actor "Enfermero/a" as Enfermero
+actor "Médico/a" as Medico
+
+participant "Frontend\nVue 3" as Frontend
+
+participant "API\nLaravel" as API
+
+participant "Servicio de\nSignos Vitales" as Signos
+
+database "Base de Datos\ndel Tenant" as BD
+
+participant "Servicio de\nAlertas" as Alertas
+
+participant "Servicio de\nNotificaciones" as Notificaciones
+
+
+== Registro de signos vitales ==
+
+Enfermero -> Frontend: Selecciona paciente e ingresa\nlos signos vitales
+
+Frontend -> API: POST /api/v1/signos-vitales
+
+API -> API: Validar JWT, permisos\ny X-Tenant-ID
+
+
+alt Usuario no autenticado o sin permiso
+
+    API --> Frontend: Error de autenticación\no autorización
+
+    Frontend --> Enfermero: Mostrar mensaje de error
+
+
+else Usuario autorizado
+
+    API -> Signos: Solicitar registro\nde signos vitales
+
+    Signos -> Signos: Validar datos ingresados
+
+
+    alt Datos inválidos
+
+        Signos --> API: Errores de validación
+
+        API --> Frontend: Respuesta de error
+
+        Frontend --> Enfermero: Mostrar errores\nde validación
+
+
+    else Datos válidos
+
+        Signos -> BD: Guardar registro\nde signos vitales
+
+        BD --> Signos: Registro almacenado
+
+        Signos -> BD: Consultar rangos\nde referencia
+
+        BD --> Signos: Rangos configurados
+
+        Signos -> Signos: Evaluar valores\nregistrados
+
+
+        alt Existen valores anormales
+
+            Signos -> Alertas: Generar alerta
+
+            Alertas -> BD: Guardar alerta
+
+            BD --> Alertas: Alerta registrada
+
+            Alertas -> Notificaciones: Enviar notificación
+
+            Notificaciones --> Alertas: Notificación procesada
+
+
+        else Valores dentro del rango
+
+            Signos -> Signos: Clasificar valores\ncomo normales
+
+        end
+
+
+        Signos --> API: Registro procesado
+
+        API --> Frontend: Respuesta exitosa
+
+        Frontend --> Enfermero: Mostrar confirmación
+
+    end
+
+end
+
+
+== Consulta y seguimiento de alertas ==
+
+Medico -> Frontend: Consultar alertas activas
+
+Frontend -> API: GET /api/v1/alertas
+
+API -> API: Validar JWT, permisos\ny X-Tenant-ID
+
+API -> BD: Consultar alertas\ndel tenant
+
+BD --> API: Listado de alertas
+
+API --> Frontend: Retornar alertas
+
+Frontend --> Medico: Mostrar alertas
+
+
+Medico -> Frontend: Registrar seguimiento\nde una alerta
+
+Frontend -> API: PATCH /api/v1/alertas/{id}
+
+API -> BD: Guardar seguimiento\ny actualizar estado
+
+BD --> API: Seguimiento registrado
+
+API --> Frontend: Confirmar actualización
+
+Frontend --> Medico: Mostrar confirmación
+
+@enduml
