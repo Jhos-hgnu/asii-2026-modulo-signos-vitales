@@ -6,7 +6,7 @@
 | ------------------- | ------------------------------------------------------------ |
 | Repositorio         | https://github.com/Jhos-hgnu/asii-2026-modulo-signos-vitales |
 | Rama                | feature/semana-02-solid                                      |
-| Etiqueta, si aplica | semana-02-lsp-v1                                             |
+| Etiqueta, si aplica | semana-02-lsp-v2                                             |
 
 ## Evidencia a adjuntar
 
