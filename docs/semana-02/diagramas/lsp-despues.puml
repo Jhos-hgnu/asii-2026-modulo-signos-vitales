@@ -1,0 +1,52 @@
+@startuml
+title Diseño propuesto aplicando LSP
+skinparam classAttributeIconSize 0
+
+class VitalSign
+class ResultadoEvaluacion
+
+interface ReglaEvaluacionVital {
+  +evaluar(registro: VitalSign): ResultadoEvaluacion
+}
+
+class ReglaTemperatura
+class ReglaFrecuenciaCardiaca
+class ReglaFrecuenciaRespiratoria
+class ReglaPresionArterial
+class ReglaSaturacionOxigeno
+class ReglaGlucosa
+
+class MotorEvaluacionVital {
+  -reglas: List<ReglaEvaluacionVital>
+  +evaluar(registro: VitalSign): ResultadoEvaluacion
+}
+
+class SignosVitalesService {
+  +registrar(registro: VitalSign)
+}
+
+class GestorAlertas {
+  +generarSiCorresponde(registro: VitalSign, resultado: ResultadoEvaluacion)
+}
+
+ReglaEvaluacionVital <|.. ReglaTemperatura
+ReglaEvaluacionVital <|.. ReglaFrecuenciaCardiaca
+ReglaEvaluacionVital <|.. ReglaFrecuenciaRespiratoria
+ReglaEvaluacionVital <|.. ReglaPresionArterial
+ReglaEvaluacionVital <|.. ReglaSaturacionOxigeno
+ReglaEvaluacionVital <|.. ReglaGlucosa
+
+MotorEvaluacionVital o-- "1..*" ReglaEvaluacionVital
+SignosVitalesService --> VitalSign : registra
+SignosVitalesService --> MotorEvaluacionVital : solicita evaluación
+MotorEvaluacionVital --> ResultadoEvaluacion : retorna
+SignosVitalesService --> GestorAlertas : resultado anormal
+GestorAlertas --> VitalSign : vincula alerta al registro
+
+note right of ReglaEvaluacionVital
+  Todas las implementaciones aceptan el mismo
+  contrato: VitalSign -> ResultadoEvaluacion.
+  Una regla concreta puede reemplazarse por otra
+  sin cambiar MotorEvaluacionVital.
+end note
+@enduml
