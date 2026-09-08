@@ -1,0 +1,123 @@
+@startuml
+title Proceso Global - Sistema Hospitalario Integrado
+
+skinparam shadowing false
+skinparam defaultFontName Arial
+skinparam activity {
+  BackgroundColor #F8FAFC
+  BorderColor #334155
+  FontColor #0F172A
+  DiamondBackgroundColor #DBEAFE
+  DiamondBorderColor #2563EB
+}
+
+start
+
+partition "Usuario autorizado" {
+  :Iniciar sesion;
+}
+
+partition "Seguridad y Tenant" {
+  :Autenticar JWT, identificar tenant
+  y verificar rol/permisos;
+  if (¿Acceso autorizado?) then (Si)
+  else (No)
+    :Denegar acceso y registrar intento;
+    stop
+  endif
+}
+
+partition "Personal administrativo o clinico" {
+  :Buscar e identificar paciente;
+}
+
+partition "Modulo de Pacientes" {
+  if (¿Paciente existe?) then (Si)
+    :Recuperar datos del paciente;
+  else (No)
+    :Registrar paciente;
+  endif
+}
+
+partition "Personal administrativo o clinico" {
+  :Seleccionar o crear la atencion
+del paciente;
+}
+
+partition "Modulos de Citas, Admision y Camas" {
+  if (¿Atencion hospitalaria?) then (Si)
+    :Registrar admision;
+    :Asignar sala, ward y cama disponible;
+  else (No)
+    :Vincular cita o atencion ambulatoria;
+  endif
+}
+
+partition "Expediente Medico Electronico" {
+  :Crear o recuperar el contexto clinico
+de la atencion;
+}
+
+partition "Enfermero/a" {
+  :Seleccionar paciente y atencion;
+  repeat
+    :Ingresar mediciones de signos vitales;
+    :Enviar registro;
+    partition "Modulo de Signos Vitales" {
+      :Validar datos clinicos requeridos;
+    }
+  repeat while (¿Datos invalidos?) is (Si)
+}
+
+partition "Modulo de Signos Vitales" {
+  :Guardar signos vitales con fecha, hora
+  y usuario responsable en el tenant;
+  :Consultar rangos de referencia;
+  :Evaluar valores registrados;
+  if (¿Existen valores anormales?) then (Si)
+  :Crear alerta con prioridad
+  y estado inicial;
+  :Guardar alerta asociada al paciente
+  y a la atencion;
+  :Enviar evento al modulo de
+notificaciones internas;
+  else (No)
+    :Clasificar registro como normal;
+  endif
+  :Publicar confirmacion del registro;
+}
+
+partition "Medico/a" {
+  if (¿Hay alerta activa?) then (Si)
+  :Consultar alerta, signos vitales
+  y expediente del paciente;
+  :Valorar condicion clinica;
+    if (¿Requiere intervencion?) then (Si)
+      :Registrar nota SOAP y diagnostico;
+      :Indicar tratamiento y/o
+orden de laboratorio;
+    endif
+    :Registrar seguimiento y actualizar
+el estado de la alerta;
+  endif
+}
+
+partition "Modulos Clinicos Integrados" {
+  if (¿Se genero orden de laboratorio?) then (Si)
+    :Procesar orden, muestra y resultado;
+    :Validar resultado e informar al medico;
+  endif
+  if (¿Se indico tratamiento?) then (Si)
+    :Validar alergias y gestionar
+prescripcion electronica;
+  endif
+}
+
+partition "Auditoria, Reportes y Analitica" {
+  :Registrar trazabilidad de operaciones clinicas;
+  :Actualizar datos disponibles para
+reportes e indicadores;
+}
+
+stop
+@enduml
