@@ -1,0 +1,43 @@
+@startuml
+title Diseño inicial - Riesgo de incumplimiento de LSP
+skinparam classAttributeIconSize 0
+
+class VitalSign
+class SignosVitalesService {
+  +registrar(registro: VitalSign)
+}
+
+abstract class ReglaUmbral {
+  +evaluar(valor: decimal): ResultadoEvaluacion
+}
+
+class ReglaTemperatura {
+  +evaluar(valor: decimal): ResultadoEvaluacion
+}
+
+class ReglaFrecuenciaCardiaca {
+  +evaluar(valor: decimal): ResultadoEvaluacion
+}
+
+class ReglaPresionArterial {
+  +evaluar(sistolica: int, diastolica: int): ResultadoEvaluacion
+}
+
+class GestorAlertas {
+  +generar(resultado: ResultadoEvaluacion)
+}
+
+SignosVitalesService --> VitalSign : registra
+SignosVitalesService --> ReglaUmbral : usa regla genérica
+ReglaUmbral <|-- ReglaTemperatura
+ReglaUmbral <|-- ReglaFrecuenciaCardiaca
+ReglaUmbral <|-- ReglaPresionArterial
+SignosVitalesService --> GestorAlertas : si hay anormalidad
+
+note right of ReglaPresionArterial
+  Requiere una firma/precondición distinta.
+  El cliente debe tratarla de forma especial,
+  por lo que no puede sustituir limpiamente
+  a ReglaUmbral.
+end note
+@enduml
