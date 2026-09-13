@@ -1,0 +1,66 @@
+@startuml
+title ASII-13 - Vista arquitectonica de alto nivel
+left to right direction
+skinparam componentStyle rectangle
+skinparam shadowing false
+skinparam packageStyle rectangle
+
+actor "Enfermera" as nurse
+actor "Medico" as doctor
+
+package "Cliente web" {
+  [Interfaz Vue\n<<existente; vistas ASII-13 propuestas>>] as ui
+  [Cliente HTTP Axios\n<<existente>>] as axios
+  ui --> axios
+}
+
+package "API Laravel" {
+  [TenantMiddleware\n<<existente>>] as tenant
+  [JwtAuth\n<<existente>>] as jwt
+  [RBAC Spatie\n<<roles existentes; permisos ASII-13 propuestos>>] as rbac
+  [VitalSignController\n<<propuesto>>] as controller
+  [VitalSignRegistrationService\n<<propuesto>>] as service
+  [VitalSignRangeEvaluator\n<<propuesto>>] as evaluator
+
+  tenant --> jwt
+  jwt --> rbac
+  rbac --> controller
+  controller --> service : registrar
+  service --> evaluator : evaluar despues de persistir
+}
+
+package "Dominio y persistencia HIS" {
+  [Contexto clinico\nMedicalRecord, Patient y Admission\n<<existentes>>] as clinical_context
+  [Identidad\nUser y roles\n<<existentes>>] as identity
+  database "Tenant\n<<existente>>" as tenant_data
+  [VitalSign\n<<existente>>] as vital
+  database "vital_signs\n<<existente>>" as vital_table
+
+  vital --> vital_table
+}
+
+component "Proveedor de rangos clinicos\n<<propuesto; aprobacion pendiente>>" as ranges
+
+nurse --> ui : registra mediciones
+doctor --> ui : consulta historial y alerta
+axios --> tenant : REST + JWT + X-Tenant-ID
+tenant --> tenant_data : resuelve tenant
+jwt --> identity : autentica usuario y tenant del token
+rbac --> identity : verifica rol/permiso
+controller --> vital : consulta historial y alerta
+service --> clinical_context : valida expediente y tenant
+service --> vital : crea y actualiza
+evaluator --> ranges : obtiene reglas aprobadas
+evaluator --> vital : has_alert y alert_details
+
+note right of evaluator
+  Si falta un rango, la medicion no se clasifica.
+  ASII-13 no usa critical_alerts de ASII-21.
+end note
+
+legend right
+  <b>Estados</b>
+  Existente: disponible en la base actual del HIS.
+  Propuesto: diseno para implementacion posterior.
+endlegend
+@enduml
