@@ -1,0 +1,26 @@
+@startuml
+title ASII-13 - Semana 10: wireframes responsive (propuesta no implementada)
+
+skinparam componentStyle rectangle
+skinparam defaultTextAlignment left
+
+rectangle "MR1 - TABLET / FORMULARIO\nPROPUESTA RESPONSIVE - NO IMPLEMENTADA\n\nPaciente: [nombre] - ID: [id] - Expediente: [id]\n[ Volver ]\n\nFecha y hora * [____________]\n\nMEDICIONES (una o mas)\n[ ] Temperatura       Valor [____] C\n[ ] Frec. cardiaca    Valor [____] lpm\n[ ] Saturacion O2     Valor [____] %\n[ ] Otras mediciones  [expandir]\n\n[ Cancelar ]              [ Guardar signos vitales ]\n\nDos columnas solo si todos los controles conservan espacio tactil." as MR1
+
+rectangle "MR2 - TELEFONO / FORMULARIO\nPROPUESTA RESPONSIVE - NO IMPLEMENTADA\n\n< Volver\nPaciente: [nombre]\nID: [id] | Expediente: [id]\n\nFecha y hora *\n[________________]\n\nMEDICIONES (una o mas)\n[ ] Temperatura\n    Valor * [________]  C\n[ ] Frecuencia cardiaca\n    Valor * [________]  lpm\n[ Ver otras mediciones ]\n\n[ Guardar signos vitales ]\n\nUna columna; ayuda disponible sin hover." as MR2
+
+rectangle "MR3 - TELEFONO / VALIDACION\nPROPUESTA RESPONSIVE - NO IMPLEMENTADA\n\nCorrige 2 campos antes de guardar\n\nFecha y hora *\n[________________] ! requerida\n\nTemperatura\nValor * [abc_____] C\n! Ingrese un valor numerico.\n\n[ Volver al primer error ]\n[ Guardar signos vitales ]\n\nResumen y campo afectado usan texto e icono, no solo color." as MR3
+
+rectangle "MR4 - TABLET O TELEFONO / EXITO\nPROPUESTA RESPONSIVE - NO IMPLEMENTADA\n\nRegistro guardado\nConfirmado a las [fecha/hora].\nNo se reporto una alerta en la respuesta.\n\n[ Volver al contexto ]\n[ Registrar otra medicion ]\n\nFoco propuesto en el titulo del resultado." as MR4
+
+rectangle "MR5 - TABLET O TELEFONO / ALERTA\nPROPUESTA RESPONSIVE - NO IMPLEMENTADA\n\nRegistro guardado\n\n[ ! ] ALERTA CLINICA\nSe detectaron valores fuera del rango configurado.\n[tipo] [valor] [unidad] [estado recibido]\n\nSiga el protocolo clinico local.\nDetalle adicional solo cuando exista.\n\n[ Volver al contexto clinico ]\n\nConfirmacion y alerta se distinguen del error tecnico." as MR5
+
+MR1 --> MR2 : menor espacio disponible
+MR2 --> MR3 : validacion invalida
+MR2 --> MR4 : 201 / has_alert falso
+MR2 --> MR5 : 201 / has_alert verdadero
+
+note bottom
+Trazabilidad Semana 9: MR1/MR2 responden a H1, H2, H3 y H7; MR3 a H1, H3, H5 y H6;
+MR4 a H3, H5 y H6; MR5 a H3, H4 y H6. No son componentes Vue ni CSS implementado.
+end note
+@enduml
