@@ -1,0 +1,37 @@
+@startuml
+title ASII-13 - Semana 5: evolucion futura evaluada
+
+skinparam componentStyle rectangle
+skinparam packageStyle rectangle
+
+rectangle "ACTUAL: monolito modular Laravel" as Current {
+  [ASII-13\nregistro y evaluacion] as Module
+  [JWT + TenantMiddleware + RBAC comun] as Security
+  database "HOSPITAL\nvital_signs" as Hospital
+  Module --> Security
+  Module --> Hospital
+}
+
+rectangle "FUTURO / NO IMPLEMENTADO" as Future {
+  [Contrato interno estable] as Contract
+  [Evento VitalSignAlertDetected] as Event
+  [Outbox transaccional] as Outbox
+  [Worker / cola] as Worker
+  [Consumidor de notificaciones] as Notifications
+  [Posible servicio de signos vitales\nsolo con metricas que lo justifiquen] as Microservice
+
+  Contract --> Event
+  Event --> Outbox
+  Outbox --> Worker
+  Worker --> Notifications
+  Contract ..> Microservice : posible extraccion
+}
+
+Current --> Future : evolucion gradual\nno es implementacion actual
+
+note bottom of Future
+La extraccion se evaluaria ante alto volumen,
+dispositivos conectados, multiples consumidores,
+end note
+
+@enduml

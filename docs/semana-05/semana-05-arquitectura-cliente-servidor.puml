@@ -1,0 +1,68 @@
+@startuml
+title ASII-13 - Semana 5: arquitectura cliente-servidor actual
+
+skinparam componentStyle rectangle
+skinparam packageStyle rectangle
+
+actor "Personal clinico" as Clinico
+
+rectangle "Cliente web existente" {
+  [Vue 3] as Vue
+  [Vue Router / Pinia] as ClientState
+  [Axios] as Axios
+}
+
+rectangle "Monolito modular Laravel" {
+  [TenantMiddleware] as Tenant
+  [JwtAuth] as Jwt
+  [VitalSignController] as Controller
+  [StoreVitalSignRequest] as Request
+  [VitalSignRegistrationService] as Service
+  [VitalSignRangeEvaluator] as Evaluator
+  interface "VitalSignRangeProvider\n(sin implementacion/binding)" as RangeProvider
+  [EloquentVitalSignRepository] as Repository
+}
+
+rectangle "Modelos HIS relacionados" {
+  [VitalSign] as VitalSign
+  [MedicalRecord] as MedicalRecord
+  [Admission] as Admission
+  [User] as User
+  [Tenant] as TenantModel
+}
+
+database "HOSPITAL\n(vital_signs y datos clinicos)" as Hospital
+
+Clinico --> Vue
+Vue --> ClientState
+Vue --> Axios
+Axios --> Tenant : HTTP JSON\nBearer JWT + X-Tenant-ID
+Tenant --> TenantModel : resuelve tenant
+Tenant --> Jwt
+Jwt --> User : autentica JWT y valida tenant
+Jwt --> Controller
+Controller --> Request : valida body
+Controller --> Service : tenant y usuario confiables
+Service --> Repository
+Service --> RangeProvider : consulta rango aprobado
+Service --> Evaluator : evalua mediciones
+Repository --> VitalSign
+VitalSign --> MedicalRecord
+VitalSign --> Admission
+Repository --> Hospital
+
+note right of Controller
+Ruta registrada:
+POST /api/v1/vital-signs
+
+No existe UI especifica ASII-13
+ni permisos ASII-13 aplicados.
+end note
+
+note bottom of Hospital
+Propiedad logica: HOSPITAL.
+tenant_id delimita los datos clinicos.
+CENTRAL no recibe signos vitales clinicos.
+end note
+
+@enduml
