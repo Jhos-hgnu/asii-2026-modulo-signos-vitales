@@ -1,0 +1,17 @@
+@startuml
+title ASII-13 - Semana 9: wireframes revisados (propuesta no implementada)
+
+skinparam componentStyle rectangle
+skinparam defaultTextAlignment left
+
+rectangle "WR1 - Formulario y error accesibles\nPROPUESTA REVISADA - NO IMPLEMENTADA\n\nASII-13 / Registrar signos vitales\nPaciente: [nombre] - ID: [identificador] - Expediente: [id]\n[ Volver al contexto ]\n\nFecha y hora de medicion *\n[____________]  Ayuda: indique fecha y hora.\n\nMEDICIONES (capture una o mas)\n[ ] Temperatura\n    Valor * [____]  Unidad: C\n    ! Error: ingrese un valor numerico.\n[ ] Frecuencia cardiaca\n    Valor * [____]  Unidad: lpm\n\nResumen: corrija 1 campo antes de guardar.\n\n[ Cancelar ] [ Guardar signos vitales ]\n\nH1: labels, grupos, ayuda y error asociado.\nH2: captura progresiva. H3: orden de foco definido." as WR1
+
+rectangle "WR2 - Resultado con alerta clinica accesible\nPROPUESTA REVISADA - NO IMPLEMENTADA\n\nRegistro guardado\nLa solicitud fue confirmada a las [fecha/hora].\n\n[ ! ] ALERTA CLINICA\nSe detectaron valores fuera del rango configurado.\nMedicion: [tipo]  Valor: [valor] [unidad]\nEstado: [estado recibido]\n\nSiga el protocolo clinico local.\nEl detalle adicional se ofrece solo cuando exista.\n\n[ Volver al contexto clinico ] [ Registrar otra medicion ]\n\nH3: foco en "Registro guardado".\nH4/H6: texto, icono y region de estado; no solo color." as WR2
+
+WR1 --> WR2 : 201 Created + has_alert verdadero
+
+note bottom
+Trazabilidad: WR1 responde a H1, H2, H3 y H5-H7; WR2 responde a H3, H4 y H6.
+No reemplaza W1-W6 de Semana 8 ni representa una pantalla Vue real.
+end note
+@enduml
