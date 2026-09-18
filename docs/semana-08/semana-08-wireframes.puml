@@ -1,0 +1,29 @@
+@startuml
+title ASII-13 - Semana 8: wireframes UX iniciales (propuestos)
+
+skinparam componentStyle rectangle
+skinparam defaultTextAlignment left
+
+rectangle "W1 - Contexto de paciente\n\nASII-13 / Signos vitales\nPaciente: [nombre]  ID: [identificador]\nExpediente: [medical_record_id]\nAdmision: [opcional]\n\n[ Registrar signos vitales ]\n\nVerificar el contexto antes de registrar." as W1
+
+rectangle "W2 - Formulario de registro\n\n< Contexto del paciente\nFecha y hora de medicion * [____________]\n\nTemperatura       [____] C\nFrecuencia cardiaca [____] lpm\nFrecuencia respiratoria [____] rpm\nPresion arterial  [____] mmHg\nSaturacion O2     [____] %\nPeso              [____] kg\nAltura            [____] cm\nGlucosa           [____] mg/dL\n\n[ Cancelar ] [ Guardar signos vitales ]\n* Ingrese una o mas mediciones." as W2
+
+rectangle "W3 - Validacion\n\nCorregir antes de guardar:\n- Fecha y hora son obligatorias.\n- Temperatura: ingrese un valor numerico.\n\nFecha y hora * [____________]  ! requerida\nTemperatura [abc_] C           ! valor invalido\n\n[ Corregir y volver a guardar ]\n\nERROR DE ENTRADA: no se envia el registro." as W3
+
+rectangle "W4 - Exito sin alerta\n\nRegistro guardado\n\nEl registro fue confirmado a las [fecha/hora].\nNo se reporto una alerta en la respuesta.\n\n[ Volver al contexto clinico ]\n[ Registrar otra medicion ]" as W4
+
+rectangle "W5 - Exito con alerta clinica\n\nRegistro guardado\n\nALERTA CLINICA\nSe detectaron valores fuera del rango configurado.\n[medicion] [valor] [unidad] [estado]\nDetalle: limites recibidos del servidor.\n\nSiga el protocolo clinico local.\n[ Volver al contexto clinico ]\n\nLa alerta no es un error de formulario." as W5
+
+rectangle "W6 - Ayuda contextual\n\n? Como completar el registro\n- Confirme paciente y expediente.\n- Use la unidad visible junto al campo.\n- Corrija los errores antes de guardar.\n\n? Alerta clinica\nEl registro puede guardarse y despues indicar\nuna condicion fuera del rango configurado.\nConsulte el protocolo clinico local." as W6
+
+W1 --> W2 : iniciar registro
+W2 --> W3 : entrada invalida
+W2 --> W4 : 201 / has_alert falso
+W2 --> W5 : 201 / has_alert verdadero
+W2 ..> W6 : ayuda
+
+note bottom
+Todos los wireframes son PROPUESTOS / NO IMPLEMENTADOS.
+No establecen rangos clinicos ni garantizan que la evaluacion actual este operativa de extremo a extremo.
+end note
+@enduml

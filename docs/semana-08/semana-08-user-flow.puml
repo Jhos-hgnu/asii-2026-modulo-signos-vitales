@@ -1,0 +1,60 @@
+@startuml
+title ASII-13 - Semana 8: user flow de registro de signos vitales
+
+start
+:Inicio desde contexto clinico;
+if (Paciente y expediente disponibles?) then (si)
+  :Abrir registro de signos vitales;
+  :Mostrar contexto del paciente
+  y fecha/hora + mediciones;
+  :Completar una o mas mediciones;
+  if (Campos requeridos, formato y unidad validos?) then (si)
+    :Enviar POST /api/v1/vital-signs;
+    if (Sesion o tenant invalidos?) then (si)
+      :Informar autenticacion/autorizacion
+      sin exponer datos clinicos;
+      stop
+    elseif (Error de red o servidor?) then (si)
+      :Conservar datos y comunicar que
+      el guardado no fue confirmado;
+      :Permitir reintento manual;
+      stop
+    else (201 Created)
+      if (has_alert = true?) then (si)
+        :Confirmar registro exitoso;
+        :Mostrar alerta clinica y detalle
+        recibido en alert_details;
+        :Indicar seguir protocolo clinico local;
+        stop
+      else (no)
+        :Confirmar registro exitoso
+        sin alerta reportada;
+        :Volver al contexto clinico;
+        stop
+      endif
+    endif
+  else (no)
+    :Mostrar resumen y errores de entrada;
+    :Mantener datos para correccion;
+    back to :Completar una o mas mediciones;
+  endif
+else (no)
+  :Informar contexto no disponible;
+  :Volver a la busqueda o expediente propietario;
+  stop
+endif
+
+note right
+PROPUESTO / NO IMPLEMENTADO:
+- Vista y navegacion ASII-13.
+- Busqueda o seleccion de paciente.
+- RBAC propio y endpoints de historial.
+
+EXISTENTE:
+- POST /api/v1/vital-signs.
+- Validacion HTTP, tenant y JWT.
+
+Una alerta clinica no es un error de entrada.
+Solo se muestra tras una respuesta exitosa con has_alert.
+end note
+@enduml
