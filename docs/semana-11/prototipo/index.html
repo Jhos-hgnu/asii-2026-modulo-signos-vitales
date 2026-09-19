@@ -1,0 +1,589 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>ASII-13 | Prototipo de signos vitales</title>
+    <style>
+      :root {
+        --ink: #15232d;
+        --muted: #536471;
+        --line: #c8d3da;
+        --page: #eef4f6;
+        --card: #fff;
+        --primary: #075c78;
+        --success: #166534;
+        --alert: #9a3412;
+        --error: #a61b1b;
+        --focus: #b45309;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        background: var(--page);
+        color: var(--ink);
+        font:
+          16px/1.5 Arial,
+          sans-serif;
+      }
+      button,
+      input,
+      select {
+        font: inherit;
+        min-height: 44px;
+      }
+      button {
+        border: 0;
+        border-radius: 6px;
+        cursor: pointer;
+        font-weight: bold;
+        padding: 10px 16px;
+      }
+      button:focus-visible,
+      input:focus-visible,
+      select:focus-visible {
+        outline: 3px solid var(--focus);
+        outline-offset: 2px;
+      }
+      .primary {
+        background: var(--primary);
+        color: #fff;
+      }
+      .secondary {
+        background: #e3edf1;
+      }
+      .link {
+        background: none;
+        color: var(--primary);
+        padding-left: 0;
+        text-decoration: underline;
+      }
+      .skip {
+        background: #fff;
+        color: var(--primary);
+        left: 12px;
+        padding: 8px;
+        position: absolute;
+        top: -50px;
+      }
+      .skip:focus {
+        top: 12px;
+      }
+      header {
+        background: #073b4c;
+        color: #fff;
+      }
+      .header,
+      main {
+        margin: auto;
+        max-width: 980px;
+        padding-left: 24px;
+        padding-right: 24px;
+      }
+      .header {
+        align-items: center;
+        display: flex;
+        justify-content: space-between;
+        min-height: 72px;
+      }
+      .badge {
+        border: 1px solid #bce6f0;
+        border-radius: 999px;
+        font-size: 0.78rem;
+        padding: 4px 9px;
+        text-transform: uppercase;
+      }
+      main {
+        padding-bottom: 48px;
+        padding-top: 28px;
+      }
+      .view[hidden] {
+        display: none;
+      }
+      .card {
+        background: var(--card);
+        border: 1px solid var(--line);
+        border-radius: 10px;
+        box-shadow: 0 2px 8px #19344712;
+        margin-bottom: 20px;
+        padding: 24px;
+      }
+      .patient {
+        border-left: 6px solid var(--primary);
+      }
+      h1 {
+        font-size: clamp(1.55rem, 3vw, 2rem);
+        line-height: 1.2;
+        margin: 0 0 8px;
+      }
+      h2 {
+        font-size: 1.2rem;
+        margin: 0 0 12px;
+      }
+      h3 {
+        margin: 0 0 6px;
+      }
+      .muted,
+      .hint {
+        color: var(--muted);
+      }
+      .patient-grid,
+      .grid {
+        display: grid;
+        gap: 16px;
+        grid-template-columns: repeat(3, 1fr);
+      }
+      .datetime {
+        grid-template-columns: repeat(2, 1fr);
+      }
+      .label {
+        color: var(--muted);
+        display: block;
+        font-size: 0.85rem;
+        font-weight: bold;
+      }
+      .value {
+        font-size: 1.08rem;
+        font-weight: bold;
+      }
+      .notice,
+      .summary {
+        border-left: 5px solid var(--primary);
+        margin-bottom: 16px;
+        padding: 12px 14px;
+      }
+      .notice {
+        background: #e7f6fa;
+      }
+      .summary {
+        background: #fff0f0;
+        border-color: var(--error);
+      }
+      .summary:empty {
+        display: none;
+      }
+      fieldset {
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        margin: 0 0 20px;
+        padding: 18px;
+      }
+      legend {
+        font-weight: bold;
+        padding: 0 6px;
+      }
+      .field {
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
+      }
+      label {
+        font-weight: bold;
+      }
+      input,
+      select {
+        border: 1px solid #758391;
+        border-radius: 5px;
+        padding: 8px;
+        width: 100%;
+      }
+      .input-unit {
+        align-items: center;
+        display: flex;
+        gap: 6px;
+      }
+      .unit {
+        background: #e9eff2;
+        border-radius: 4px;
+        min-height: 44px;
+        padding: 10px;
+        white-space: nowrap;
+      }
+      .field-error {
+        color: var(--error);
+        font-size: 0.9rem;
+        font-weight: bold;
+        min-height: 1.35em;
+      }
+      input[aria-invalid="true"] {
+        border: 2px solid var(--error);
+      }
+      .simulator {
+        background: #f6f2ff;
+        border: 1px solid #d8c9f5;
+        border-radius: 8px;
+        margin: 20px 0;
+        padding: 16px;
+      }
+      .actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+        margin-top: 20px;
+      }
+      .result {
+        border-left: 7px solid var(--success);
+      }
+      .result.alert {
+        border-color: var(--alert);
+      }
+      .result.error {
+        border-color: var(--error);
+      }
+      .status {
+        border-radius: 5px;
+        display: inline-block;
+        font-size: 0.85rem;
+        font-weight: bold;
+        margin-bottom: 12px;
+        padding: 4px 8px;
+      }
+      .success {
+        background: #edf9f0;
+        color: var(--success);
+      }
+      .alert-status {
+        background: #fff3e8;
+        color: var(--alert);
+      }
+      .error-status {
+        background: #fff0f0;
+        color: var(--error);
+      }
+      .clinical {
+        background: #fff3e8;
+        border: 2px solid var(--alert);
+        border-radius: 7px;
+        margin-top: 16px;
+        padding: 16px;
+      }
+      .footnote {
+        font-size: 0.9rem;
+        margin-top: 18px;
+      }
+      @media (max-width: 720px) {
+        .header {
+          align-items: flex-start;
+          flex-direction: column;
+          gap: 6px;
+          padding-bottom: 14px;
+          padding-top: 14px;
+        }
+        .patient-grid,
+        .grid,
+        .datetime {
+          grid-template-columns: 1fr;
+        }
+        .header,
+        main {
+          padding-left: 16px;
+          padding-right: 16px;
+        }
+        .card {
+          padding: 18px;
+        }
+        .actions button {
+          width: 100%;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <a class="skip" href="#main">Saltar al contenido principal</a>
+    <header>
+      <div class="header">
+        <strong>ASII-13 · Signos vitales</strong
+        ><span class="badge">Modo prototipo / simulacion</span>
+      </div>
+    </header>
+    <main id="main" tabindex="-1">
+      <section class="view" id="context" aria-labelledby="context-title">
+        <div class="card patient">
+          <h1 id="context-title">Contexto del paciente</h1>
+          <p class="muted">
+            Verifique el contexto antes de iniciar. Los datos son ficticios y
+            solo sirven para la demostracion.
+          </p>
+          <div class="patient-grid">
+            <div>
+              <span class="label">Paciente</span
+              ><span class="value">Lucia Mendez Rojas</span>
+            </div>
+            <div>
+              <span class="label">Identificador</span
+              ><span class="value">PAC-DEMO-013</span>
+            </div>
+            <div>
+              <span class="label">Expediente</span
+              ><span class="value">EXP-DEMO-2026-041</span>
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <h2>Registro de signos vitales</h2>
+          <p>
+            Esta demostracion no guarda datos ni consulta el sistema
+            hospitalario.
+          </p>
+          <div class="actions">
+            <button class="primary" id="open" type="button">
+              Registrar signos vitales
+            </button>
+          </div>
+        </div>
+      </section>
+      <section class="view" id="form-view" aria-labelledby="form-title" hidden>
+        <div class="card patient">
+          <h1 id="form-title">Registrar signos vitales</h1>
+          <p>
+            <strong>Lucia Mendez Rojas</strong> · PAC-DEMO-013 ·
+            EXP-DEMO-2026-041
+          </p>
+        </div>
+        <div class="notice" id="retained" hidden tabindex="-1">
+          Los datos permanecen en este prototipo. Revise el resultado simulado y
+          vuelva a intentar guardar.
+        </div>
+        <form class="card" id="form" novalidate>
+          <div class="summary" id="summary" role="alert" tabindex="-1"></div>
+          <fieldset>
+            <legend>Momento de la medicion</legend>
+            <div class="grid datetime">
+              <div class="field">
+                <label for="date">Fecha <span aria-hidden="true">*</span></label
+                ><input
+                  id="date"
+                  type="date"
+                  required
+                  aria-describedby="date-error"
+                /><span class="field-error" id="date-error"></span>
+              </div>
+              <div class="field">
+                <label for="time">Hora <span aria-hidden="true">*</span></label
+                ><input
+                  id="time"
+                  type="time"
+                  required
+                  aria-describedby="time-error"
+                /><span class="field-error" id="time-error"></span>
+              </div>
+            </div>
+          </fieldset>
+          <fieldset>
+            <legend>
+              Mediciones disponibles
+              <span class="hint">(ingrese al menos una)</span>
+            </legend>
+            <p class="hint">
+              Las unidades son referencia del contrato documentado. No se
+              aplican rangos clinicos.
+            </p>
+            <div class="grid" id="measurements"></div>
+            <span class="field-error" id="measurements-error"></span>
+          </fieldset>
+          <div class="simulator">
+            <label for="simulation">Simular resultado al guardar</label
+            ><select id="simulation">
+              <option value="normal">Exito normal</option>
+              <option value="alert">Exito con alerta clinica</option>
+              <option value="error">Error de red/servidor</option>
+            </select>
+            <p class="hint">
+              Esta eleccion es propia del prototipo; las mediciones no
+              determinan el resultado.
+            </p>
+          </div>
+          <div class="actions">
+            <button class="secondary" id="cancel" type="button">Cancelar</button
+            ><button class="primary" type="submit">
+              Guardar signos vitales
+            </button>
+          </div>
+        </form>
+      </section>
+      <section
+        class="view"
+        id="result-view"
+        aria-labelledby="result-title"
+        hidden
+      >
+        <div class="card result" id="result-card">
+          <span class="status" id="status"></span>
+          <h1 id="result-title" tabindex="-1"></h1>
+          <p id="message"></p>
+          <div id="clinical" hidden></div>
+          <div id="retry" hidden class="simulator">
+            <label for="retry-result">Resultado del reintento</label
+            ><select id="retry-result">
+              <option value="normal">Exito normal</option>
+              <option value="alert">Exito con alerta clinica</option>
+              <option value="error">Error de red/servidor</option>
+            </select>
+            <p class="hint">Reintente sin volver a capturar las mediciones.</p>
+          </div>
+          <div class="actions" id="result-actions"></div>
+          <p class="muted footnote">
+            Resultado simulado: no se envia
+            <code>POST /api/v1/vital-signs</code>, no se persiste informacion y
+            no se evalua una condicion clinica.
+          </p>
+        </div>
+      </section>
+      <div id="live" role="status" aria-live="polite" aria-atomic="true"></div>
+    </main>
+    <script>
+      (() => {
+        const data = [
+          ["temperature", "Temperatura", "C", "0.1", "decimal"],
+          ["heart", "Frecuencia cardiaca", "lpm", "1", "numeric"],
+          ["respiratory", "Frecuencia respiratoria", "rpm", "1", "numeric"],
+          ["oxygen", "Saturacion de oxigeno", "%", "1", "numeric"],
+          ["systolic", "Presion sistolica", "mmHg", "1", "numeric"],
+          ["diastolic", "Presion diastolica", "mmHg", "1", "numeric"],
+        ];
+        const ids = data.map((x) => x[0]),
+          views = ["context", "form-view", "result-view"],
+          q = (s) => document.querySelector(s),
+          live = q("#live");
+        q("#measurements").innerHTML = data
+          .map(
+            ([id, label, unit, step, mode]) =>
+              `<div class="field"><label for="${id}">${label}</label><div class="input-unit"><input id="${id}" type="number" step="${step}" inputmode="${mode}" aria-describedby="measurements-error"><span class="unit">${unit}</span></div></div>`,
+          )
+          .join("");
+        const show = (id) => {
+            views.forEach((v) => (q("#" + v).hidden = v !== id));
+            q("#main").focus();
+          },
+          clear = () => {
+            q("#summary").textContent = "";
+            ["date", "time", ...ids].forEach((id) =>
+              q("#" + id).removeAttribute("aria-invalid"),
+            );
+            q("#date-error").textContent = "";
+            q("#time-error").textContent = "";
+            q("#measurements-error").textContent = "";
+          },
+          validate = () => {
+            clear();
+            let p = [];
+            for (const [id, text] of [
+              ["date", "Ingrese la fecha de medicion."],
+              ["time", "Ingrese la hora de medicion."],
+            ])
+              if (!q("#" + id).value) {
+                q("#" + id).setAttribute("aria-invalid", "true");
+                q("#" + id + "-error").textContent = text;
+                p.push(text);
+              }
+            const used = ids.filter((id) => q("#" + id).value !== "");
+            const invalid = used.some(
+              (id) =>
+                !Number.isFinite(Number(q("#" + id).value)) ||
+                Number(q("#" + id).value) < 0,
+            );
+            if (!used.length)
+              p.push("Ingrese al menos una medicion disponible.");
+            if (invalid)
+              p.push("Ingrese una medicion con formato numerico no negativo.");
+            q("#measurements-error").textContent = !used.length
+              ? "Ingrese al menos una medicion."
+              : invalid
+                ? "Revise el formato de la medicion ingresada."
+                : "";
+            if (p.length) {
+              q("#summary").innerHTML =
+                "<strong>Corrija los campos indicados antes de guardar.</strong><br>" +
+                p.join(" ");
+              q("#summary").focus();
+              live.textContent = "Hay errores de validacion en el formulario.";
+              return false;
+            }
+            return true;
+          },
+          result = (kind) => {
+            const card = q("#result-card"),
+              status = q("#status"),
+              title = q("#result-title"),
+              message = q("#message"),
+              clinical = q("#clinical"),
+              retry = q("#retry"),
+              actions = q("#result-actions");
+            card.className = "card result";
+            clinical.hidden = true;
+            retry.hidden = true;
+            actions.innerHTML = "";
+            if (kind === "normal") {
+              status.className = "status success";
+              status.textContent = "REGISTRO EXITOSO";
+              title.textContent = "Registro simulado correctamente";
+              message.textContent =
+                "No se reporto una alerta clinica en esta respuesta simulada.";
+              live.textContent =
+                "Registro simulado correctamente, sin alerta reportada.";
+            }
+            if (kind === "alert") {
+              card.classList.add("alert");
+              status.className = "status success";
+              status.textContent = "REGISTRO EXITOSO";
+              title.textContent = "Registro simulado correctamente";
+              message.textContent =
+                "La informacion se registro en la simulacion.";
+              clinical.hidden = false;
+              clinical.className = "clinical";
+              clinical.setAttribute("role", "alert");
+              clinical.innerHTML =
+                "<h3>Alerta clinica simulada</h3><p><strong>Atencion:</strong> se reportaron valores fuera del rango configurado por el sistema simulado. Esta alerta no es un error de guardado ni un diagnostico.</p><p>Siga el protocolo clinico local.</p>";
+              live.textContent =
+                "Registro simulado correctamente. Alerta clinica simulada disponible.";
+            }
+            if (kind === "error") {
+              card.classList.add("error");
+              status.className = "status error-status";
+              status.textContent = "REGISTRO NO CONFIRMADO";
+              title.textContent = "No se pudo confirmar el guardado";
+              message.textContent =
+                "Se simulo un error de red o servidor. Las mediciones permanecen en este navegador durante la demostracion.";
+              retry.hidden = false;
+              actions.innerHTML =
+                '<button class="primary" data-a="retry" type="button">Reintentar</button><button class="secondary" data-a="form" type="button">Revisar datos</button><button class="link" data-a="context" type="button">Cancelar y volver</button>';
+              live.textContent =
+                "No se pudo confirmar el guardado. Los datos se conservan para reintentar.";
+            } else
+              actions.innerHTML =
+                '<button class="primary" data-a="context" type="button">Volver al contexto</button><button class="secondary" data-a="form" type="button">Registrar otra medicion</button>';
+            show("result-view");
+            title.focus();
+          };
+        q("#open").onclick = () => {
+          q("#retained").hidden = true;
+          show("form-view");
+          q("#date").focus();
+        };
+        q("#cancel").onclick = () => {
+          show("context");
+          q("#open").focus();
+        };
+        q("#form").onsubmit = (e) => {
+          e.preventDefault();
+          if (validate()) result(q("#simulation").value);
+        };
+        q("#result-actions").onclick = (e) => {
+          const a = e.target.dataset.a;
+          if (a === "retry") return result(q("#retry-result").value);
+          if (a === "form") {
+            q("#retained").hidden = false;
+            show("form-view");
+            q("#retained").focus();
+          }
+          if (a === "context") {
+            show("context");
+            q("#open").focus();
+          }
+        };
+      })();
+    </script>
+  </body>
+</html>
